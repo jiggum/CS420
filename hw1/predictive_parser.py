@@ -2,6 +2,7 @@ import re
 
 LEFTWARD = False
 OPERATOR_PRIORITY = { '+': 1, '-': 1, '*': 2}
+ERROR_OUTPUT = 'incorrect syntax'
 
 def is_operator(token):
     return token in OPERATOR_PRIORITY
@@ -90,11 +91,15 @@ class ParsingTree:
 
     def print(self, leftward=False):
         if (not self.is_valid()):
-            return 'incorrect syntax'
+            return ERROR_OUTPUT
         return self.get_head().print(leftward=leftward)
 
     def is_valid(self):
-        if self.get_head() == None:
+        if (
+            self.get_head() == None or
+            (not is_operator(self.get_head().token)) or
+            self.get_head().left == None
+        ):
             return False
         return self.get_head().is_valid()
 
@@ -108,14 +113,17 @@ def main():
     f_r.close()
 
     for line in inputs:
-        input = line.strip()
-        parser = ParsingTree()
-        tokens = tokenizer(input)
-        if LEFTWARD:
-            tokens.reverse()
-        for token in tokens:
-            parser.append_token(token)
-        f_w.write(parser.print(leftward=LEFTWARD)+'\n')
+        try:
+            input = line.strip()
+            parser = ParsingTree()
+            tokens = tokenizer(input)
+            if LEFTWARD:
+                tokens.reverse()
+            for token in tokens:
+                parser.append_token(token)
+            f_w.write(parser.print(leftward=LEFTWARD)+'\r\n')
+        except:
+            f_w.write(ERROR_OUTPUT+'\r\n')
 
     f_w.close()
 
