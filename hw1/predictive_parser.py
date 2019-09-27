@@ -1,5 +1,6 @@
 import re
 
+LEFTWARD = False
 OPERATOR_PRIORITY = { '+': 1, '-': 1, '*': 2}
 
 def is_operator(token):
@@ -56,9 +57,11 @@ class Node:
             else:
                 return self.parent.flow_up(token)
 
-    def print(self):
-        left_print = '' if self.left == None else self.left.print()
-        right_print = '' if self.right == None else self.right.print()
+    def print(self, leftward=False):
+        left_print = '' if self.left == None else self.left.print(leftward=leftward)
+        right_print = '' if self.right == None else self.right.print(leftward=leftward)
+        if (leftward):
+            return self.token + right_print + left_print
         return self.token + left_print + right_print
 
     def is_valid(self):
@@ -85,10 +88,10 @@ class ParsingTree:
         else:
             self.last_node = self.last_node.set_token(token)
 
-    def print(self):
+    def print(self, leftward=False):
         if (not self.is_valid()):
             return 'incorrect syntax'
-        return self.get_head().print()
+        return self.get_head().print(leftward=leftward)
 
     def is_valid(self):
         if self.get_head() == None:
@@ -107,9 +110,12 @@ def main():
     for line in inputs:
         input = line.strip()
         parser = ParsingTree()
-        for token in tokenizer(input):
+        tokens = tokenizer(input)
+        if LEFTWARD:
+            tokens.reverse()
+        for token in tokens:
             parser.append_token(token)
-        f_w.write(parser.print()+'\n')
+        f_w.write(parser.print(leftward=LEFTWARD)+'\n')
 
     f_w.close()
 
