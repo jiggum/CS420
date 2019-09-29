@@ -91,20 +91,22 @@ class ParsingTree:
 
     def print(self, leftward=False):
         if (not self.is_valid()):
-            return ERROR_OUTPUT
+            raise ValueError
         return self.get_head().print(leftward=leftward)
 
     def is_valid(self):
         if (
             self.get_head() == None or
-            (not is_operator(self.get_head().token)) or
-            self.get_head().left == None
+            (is_operator(self.get_head().token) and self.get_head().left == None)
         ):
             return False
         return self.get_head().is_valid()
 
 def tokenizer(str):
     return re.findall(r'([a-z]|[0-9]+|[*+-])', str)
+
+def check_has_invalid_token(str):
+    return re.search(r'(?![ a-z0-9*+-]).', str) != None
 
 def main():
     f_r = open("input.txt", 'r')
@@ -115,6 +117,8 @@ def main():
     for line in inputs:
         try:
             input = line.strip()
+            if (check_has_invalid_token(input)):
+                raise ValueError
             parser = ParsingTree()
             tokens = tokenizer(input)
             if LEFTWARD:
